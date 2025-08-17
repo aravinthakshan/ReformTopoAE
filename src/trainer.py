@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from skimage.metrics import peak_signal_noise_ratio, structural_similarity
 
 def train_latent_autoencoder(latent_reformer,latent_nn,model,simple_classifier,train_loader, val_loader,  
-    epochs, lr, device,alpha=2.0, beta=2.0, gamma=1.0):
+    epochs, lr, device,alpha=0.5, beta=2.0, gamma=1.0):
     latent_reformer.to(device)
     latent_nn.to(device)
     model.to(device)
