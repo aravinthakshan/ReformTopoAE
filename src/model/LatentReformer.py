@@ -14,7 +14,7 @@ class LatentReformer(nn.Module):
             nn.Sigmoid()
         )
         self.decoder = nn.Sequential(
-            nn.Conv2d(2, 1, kernel_size=3, padding=1),   # Now input has 2 channels after concat
+            nn.Conv2d(2, 1, kernel_size=3, padding=1),   # Now input has 2 channels after concat f
             nn.Sigmoid(),
             nn.Upsample(scale_factor=2),
             nn.Conv2d(1, 1, kernel_size=3, padding=1),
