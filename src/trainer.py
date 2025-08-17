@@ -1,0 +1,113 @@
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from skimage.metrics import peak_signal_noise_ratio, structural_similarity
+
+def train_latent_autoencoder(latent_reformer,latent_nn,model,simple_classifier,train_loader, val_loader,  
+    epochs, lr, device,alpha=2.0, beta=2.0, gamma=1.0):
+    latent_reformer.to(device)
+    latent_nn.to(device)
+    model.to(device)
+    simple_classifier.to(device)
+
+    optimizer = torch.optim.Adam(
+        list(latent_reformer.parameters()) +
+        list(latent_nn.parameters()) +
+        list(simple_classifier.parameters()), lr=lr
+    )
+    criterion_recon = nn.MSELoss()
+    criterion_class = nn.CrossEntropyLoss()
+
+    for epoch in range(epochs):
+        latent_nn.train()
+        latent_reformer.train()
+        simple_classifier.train()
+        model.eval()  
+
+        train_loss = 0.0
+        for clean_img, topo_img, label, latent_vec in train_loader:
+            clean_img = clean_img.to(device)
+            topo_img = topo_img.to(device)
+            latent_vec = latent_vec.to(device)
+            label = label.to(device)
+
+            # Forward pass
+            latent_bottleneck = latent_nn(latent_vec)  
+            recon_output = latent_reformer(topo_img, latent_bottleneck)
+
+            # Reconstruction loss
+            loss_recon = criterion_recon(recon_output, clean_img)
+            
+            with torch.no_grad():
+                for param in model.parameters():
+                    param.requires_grad = False
+            logits_class = model(recon_output)
+            loss_class = criterion_class(logits_class, label)
+
+            logits_simple = simple_classifier(latent_bottleneck)
+            loss_simple = criterion_class(logits_simple, label)
+
+            # Total loss (as per routing logic)
+            loss = alpha * loss_recon + beta * loss_class + gamma * loss_simple
+
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+            train_loss += loss.item() * clean_img.size(0)
+
+        train_loss = train_loss / len(train_loader.dataset)
+
+        # Validation phase
+        latent_reformer.eval()
+        latent_nn.eval()
+        simple_classifier.eval()
+        val_loss = 0.0
+        total_psnr, total_ssim, samples = 0.0, 0.0, 0
+
+        with torch.no_grad():
+            for clean_img, topo_img, label, latent_vec in val_loader:
+                clean_img = clean_img.to(device)
+                topo_img = topo_img.to(device)
+                latent_vec = latent_vec.to(device)
+                label = label.to(device)
+
+                latent_bottleneck = latent_nn(latent_vec)
+                recon_output = latent_reformer(topo_img, latent_bottleneck)
+
+                # Reconstruction loss
+                loss_recon = criterion_recon(recon_output, clean_img)
+
+                
+                logits_class = model(recon_output)
+                loss_class = criterion_class(logits_class, label)
+
+                # Simple classifier loss
+                
+                logits_simple = simple_classifier(latent_bottleneck)
+                loss_simple = criterion_class(logits_simple, label)
+
+                loss = alpha * loss_recon + beta * loss_class + gamma * loss_simple
+                val_loss += loss.item() * clean_img.size(0)
+
+                # PSNR & SSIM calculation
+                output_np = recon_output.detach().cpu().numpy()
+                clean_np = clean_img.detach().cpu().numpy()
+                if output_np.ndim == 4 and output_np.shape[1] == 1:
+                    output_np = output_np.squeeze(1)
+                if clean_np.ndim == 4 and clean_np.shape == 1:
+                    clean_np = clean_np.squeeze(1)
+                for o, c in zip(output_np, clean_np):
+                    c = c.squeeze(0)
+                    psnr = peak_signal_noise_ratio(c, o, data_range=1.0)
+                    ssim = structural_similarity(c, o, data_range=1.0)
+                    total_psnr += psnr
+                    total_ssim += ssim
+                    samples += 1
+
+        val_loss = val_loss / len(val_loader.dataset)
+        avg_psnr = total_psnr / samples
+        avg_ssim = total_ssim / samples
+        print(f"Epoch {epoch+1}/{epochs} | Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f} | PSNR: {avg_psnr:.3f} | SSIM: {avg_ssim:.3f}")
+
+    print("Training Complete!")
+    return latent_reformer, latent_nn, simple_classifier
