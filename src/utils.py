@@ -4,6 +4,36 @@ import numpy as np
 import torch.nn as nn
 from skimage.metrics import peak_signal_noise_ratio, structural_similarity
 
+
+def evaluate_f1_just_classifier(classifier, val_loader, device):
+    classifier.eval()
+    
+    all_labels = []
+    all_preds_topo = []
+
+    with torch.no_grad():
+        for clean_img, topo_img, label, latent_vec in val_loader:
+            topo_img = topo_img.to(device)
+            latent_vec = latent_vec.to(device)
+            label = label.to(device)
+            
+            # -- Classify topo images --
+            logits_topo = classifier(clean_img)
+            preds_topo = torch.argmax(logits_topo, dim=1)  # Shape: (batch,)
+            
+            # If classifier expects (batch, 1, H, W) and rec_img is (batch, H, W), unsqueeze channel
+            if rec_img.ndim == 3:
+                rec_img = rec_img.unsqueeze(1)
+            
+            all_labels.extend(label.cpu().numpy())
+            all_preds_topo.extend(preds_topo.cpu().numpy())
+
+    f1_topo = f1_score(all_labels, all_preds_topo, average='macro')
+
+    print(f"F1 score (topo images): {f1_topo:.4f}")
+    return f1_topo
+
+
 def evaluate_f1_topo_vs_reconstruction(classifier, latent_reformer, latent_nn, val_loader, device):
     classifier.eval()
     latent_reformer.eval()

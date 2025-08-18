@@ -1,13 +1,9 @@
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from skimage.metrics import peak_signal_noise_ratio, structural_similarity
 from src.model.Aux import LatentNet
 from src.model.LatentReformer import LatentReformer
 from src.model.mnist_cnn import MNIST_CNN
-from src.utils import train_latent_autoencoder, evaluate_f1_topo_vs_reconstruction
+from src.utils import train_latent_autoencoder, evaluate_f1_topo_vs_reconstruction, evaluate_f1_just_classifier
 from dataloader import get_mnist_topo_loaders, get_advmnist_topo_loaders
-import numpy as np
 
 
 def train(
@@ -39,11 +35,8 @@ def train(
     model.to(device)
     model.eval()
 
-    # Simple classifier on latent space
-    # simple_classifier = nn.Linear(latent_dim, 10).to(device)
-
     # Just Classifier 
-    # Add Code here for this 
+    evaluate_f1_just_classifier(model, adv_loader, device)
 
     # Latent autoencoder parts
     latent_reformer = LatentReformer(bottleneck_h=bottleneck_h, bottleneck_w=bottleneck_w, use_null_latent=True).to(device)
