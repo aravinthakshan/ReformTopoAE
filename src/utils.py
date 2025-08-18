@@ -30,7 +30,7 @@ def evaluate_f1_just_classifier(classifier, val_loader, device):
 
     f1_topo = f1_score(all_labels, all_preds_topo, average='macro')
 
-    print(f"F1 score (topo images): {f1_topo:.4f}")
+    print(f"F1 score Just Classifier: {f1_topo:.4f}")
     return f1_topo
 
 

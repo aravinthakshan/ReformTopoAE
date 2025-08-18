@@ -50,6 +50,7 @@ def train(
         epochs=epochs, lr=lr, device=device
     )
 
+    print("Metrics on Classifier + TopoAE + Reformer")
     evaluate_f1_topo_vs_reconstruction(model, latent_reformer, latent_nn, val_loader, device)
     # Evaluate on validation set
     evaluate_f1_topo_vs_reconstruction(model, latent_reformer, latent_nn, val_loader, device)
@@ -64,6 +65,8 @@ def train(
         train_loader, val_loader,
         epochs=epochs, lr=lr, device=device
     )
+
+    print("Metrics on Classifier + TopoAE + Reformer + AUX")
 
     # Evaluate on validation set
     evaluate_f1_topo_vs_reconstruction(model, latent_reformer, latent_nn, val_loader, device)
