@@ -45,17 +45,16 @@ def evaluate_f1_topo_vs_reconstruction(classifier, latent_reformer, latent_nn, v
     print(f"F1 score (recon images): {f1_recon:.4f}")
     return f1_topo, f1_recon
 
-def train_latent_autoencoder(latent_reformer,latent_nn,model,simple_classifier,train_loader, val_loader,  
+def train_latent_autoencoder(latent_reformer,latent_nn,model,train_loader, val_loader,  
     epochs, lr, device,alpha=2.0, beta=2.0, gamma=1.0):
     latent_reformer.to(device)
     latent_nn.to(device)
     model.to(device)
-    simple_classifier.to(device)
 
     optimizer = torch.optim.Adam(
         list(latent_reformer.parameters()) +
-        list(latent_nn.parameters()) +
-        list(simple_classifier.parameters()), lr=lr
+        list(latent_nn.parameters()),
+        lr=lr
     )
     criterion_recon = nn.MSELoss()
     criterion_class = nn.CrossEntropyLoss()
@@ -63,7 +62,6 @@ def train_latent_autoencoder(latent_reformer,latent_nn,model,simple_classifier,t
     for epoch in range(epochs):
         latent_nn.train()
         latent_reformer.train()
-        simple_classifier.train()
         model.eval()  
 
         train_loss = 0.0
@@ -86,7 +84,6 @@ def train_latent_autoencoder(latent_reformer,latent_nn,model,simple_classifier,t
             logits_class = model(recon_output)
             loss_class = criterion_class(logits_class, label)
 
-            logits_simple = simple_classifier(latent_bottleneck)
             loss_simple = criterion_class(logits_simple, label)
 
             # Total loss (as per routing logic)
