@@ -2,6 +2,10 @@ import torch
 from src.model.Aux import LatentNet
 from src.model.LatentReformer import LatentReformer
 from src.model.mnist_cnn import MNIST_CNN
+from src.model.emnist_cnn import EMNIST_CNN
+from src.model.fashion_mnist import MEDMNIST_CNN
+from src.model.cifar10_cnn import CIFAR10_CNN
+
 from src.utils import train_latent_autoencoder, evaluate_f1_topo_vs_reconstruction, evaluate_f1_just_classifier
 from dataloader import get_mnist_topo_loaders, get_advmnist_topo_loaders
 
@@ -39,6 +43,24 @@ def get_dataset_configs(dataset_name):
     else:
         raise ValueError(f"Unknown dataset: {dataset_name}")
 
+def return_pretrained_classifier(dataset_name, device):
+    """
+        Returns a pretrained classifier for the given dataset
+    """
+    if dataset_name == 'Mnist':
+        loc = '/kaggle/input/classifiers/Pretrained_classifiers/mnist.pth'
+        return MNIST_CNN(), loc
+    elif dataset_name == 'Emnist':
+        loc = '/kaggle/input/classifiers/Pretrained_classifiers/mnist.pth'
+        return EMNIST_CNN(), loc
+    elif dataset_name == 'Fmnist':
+        loc = '/kaggle/input/classifiers/Pretrained_classifiers/mnist.pth'
+        return CIFAR10_CNN(), loc
+    elif dataset_name == 'Cifar':
+        loc = '/kaggle/input/classifiers/Pretrained_classifiers/mnist.pth'
+        return CIFAR10_CNN(), loc
+    
+    
 def train(
     epochs,
     batch_size,
@@ -62,10 +84,11 @@ def train(
     device = torch.device(device if device else ("cuda" if torch.cuda.is_available() else "cpu"))
 
     # Pretrained classifier
-    model = MNIST_CNN()
+    model, loc = return_pretrained_classifier(dataset_name, device)
     model.load_state_dict(
-        torch.load('/kaggle/input/classifiers/Pretrained_classifiers/mnist.pth', map_location="cpu")
+        torch.load(loc, map_location="cpu")
     )
+
     model.to(device)
     model.eval()
 

@@ -75,6 +75,7 @@ def evaluate_f1_topo_vs_reconstruction(classifier, latent_reformer, latent_nn, v
     print(f"F1 score (recon images): {f1_recon:.4f}")
     return f1_topo, f1_recon
 
+
 def train_latent_autoencoder(latent_reformer,latent_nn,model,train_loader, val_loader,  
     epochs, lr, device,alpha=0.5, beta=1.0):
     latent_reformer.to(device)
@@ -177,9 +178,6 @@ def train_latent_autoencoder(latent_reformer,latent_nn,model,train_loader, val_l
 
 
 # evaluate_f1_topo_vs_reconstruction(model, latent_reformer, latent_nn, val_loader, device)
-
-
 # adv_loader = get_advmnist_topo_loaders("/kaggle/input/invi_mnist_64/pytorch/default/1/adversarial_mnist_cw_strong_complete.npz")
-
 # evaluate_f1_topo_vs_reconstruction(model, latent_reformer, latent_nn, adv_loader, device)
 
