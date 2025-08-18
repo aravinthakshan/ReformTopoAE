@@ -5,6 +5,39 @@ from src.model.mnist_cnn import MNIST_CNN
 from src.utils import train_latent_autoencoder, evaluate_f1_topo_vs_reconstruction, evaluate_f1_just_classifier
 from dataloader import get_mnist_topo_loaders, get_advmnist_topo_loaders
 
+def get_dataset_configs(dataset_name):
+    # emnist 128 
+    # fmnist 128
+    # mnist 64 
+    # cifar 256
+    """
+        # Returns dataset specific configurations
+    """
+    if dataset_name == 'Mnist':
+        return {
+            'latent_dim': 64,
+            'channels' : 1
+        }
+    elif dataset_name == 'Emnist':
+        return {
+            'latent_dim': 128,
+            'channels' : 1
+
+        }
+    elif dataset_name == 'Fmnist':
+        return {
+            'latent_dim': 128,
+            'channels' : 1
+
+        }
+    elif dataset_name == 'Cifar':
+        return {
+            'latent_dim': 256,
+            'channels' : 3
+
+        }
+    else:
+        raise ValueError(f"Unknown dataset: {dataset_name}")
 
 def train(
     epochs,
@@ -16,6 +49,8 @@ def train(
     dataset_name,
 ):
     print(f"Training on dataset: {dataset_name}")
+    latent_dim, channels = get_dataset_configs(dataset_name).values() 
+
     # Load dataset
     train_loader, val_loader = get_mnist_topo_loaders(train_dir, batch_size=batch_size)
     # Evaluate on adversarial set
@@ -23,7 +58,6 @@ def train(
 
     bottleneck_h = 14
     bottleneck_w = 14
-    latent_dim = 64
 
     device = torch.device(device if device else ("cuda" if torch.cuda.is_available() else "cpu"))
 

@@ -18,4 +18,5 @@ class LatentNet(nn.Module):
     def forward(self, z):
         out = self.fc(z)                 # (batch_size, bottleneck_h * bottleneck_w)
         out = out.view(-1, 1, self.bottleneck_h, self.bottleneck_w)  # (batch_size, 1, H, W)
-        return out
+        return out # 196
+    
