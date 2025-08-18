@@ -51,10 +51,10 @@ def return_pretrained_classifier(dataset_name, device):
         loc = '/kaggle/input/classifiers/Pretrained_classifiers/mnist.pth'
         return MNIST_CNN(), loc
     elif dataset_name == 'Emnist':
-        loc = '/kaggle/input/classifiers/Pretrained_classifiers/mnist.pth'
+        loc = '/kaggle/input/classifiers/emnist_classifier.pth'
         return EMNIST_CNN(), loc
     elif dataset_name == 'Fmnist':
-        loc = '/kaggle/input/classifiers/Pretrained_classifiers/mnist.pth'
+        loc = '/kaggle/input/classifiers/fashionmnist_classifier.pth'
         return CIFAR10_CNN(), loc
     elif dataset_name == 'Cifar':
         loc = '/kaggle/input/classifiers/Pretrained_classifiers/mnist.pth'
