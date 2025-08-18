@@ -46,7 +46,7 @@ def evaluate_f1_topo_vs_reconstruction(classifier, latent_reformer, latent_nn, v
     return f1_topo, f1_recon
 
 def train_latent_autoencoder(latent_reformer,latent_nn,model,train_loader, val_loader,  
-    epochs, lr, device,alpha=2.0, beta=2.0, gamma=1.0):
+    epochs, lr, device,alpha=2.0, beta=2.0):
     latent_reformer.to(device)
     latent_nn.to(device)
     model.to(device)
@@ -84,10 +84,8 @@ def train_latent_autoencoder(latent_reformer,latent_nn,model,train_loader, val_l
             logits_class = model(recon_output)
             loss_class = criterion_class(logits_class, label)
 
-            loss_simple = criterion_class(logits_simple, label)
-
             # Total loss (as per routing logic)
-            loss = alpha * loss_recon + beta * loss_class + gamma * loss_simple
+            loss = alpha * loss_recon + beta * loss_class
 
             optimizer.zero_grad()
             loss.backward()
@@ -99,7 +97,6 @@ def train_latent_autoencoder(latent_reformer,latent_nn,model,train_loader, val_l
         # Validation phase
         latent_reformer.eval()
         latent_nn.eval()
-        simple_classifier.eval()
         val_loss = 0.0
         total_psnr, total_ssim, samples = 0.0, 0.0, 0
 
@@ -122,10 +119,7 @@ def train_latent_autoencoder(latent_reformer,latent_nn,model,train_loader, val_l
 
                 # Simple classifier loss
                 
-                logits_simple = simple_classifier(latent_bottleneck)
-                loss_simple = criterion_class(logits_simple, label)
-
-                loss = alpha * loss_recon + beta * loss_class + gamma * loss_simple
+                loss = alpha * loss_recon + beta * loss_class 
                 val_loss += loss.item() * clean_img.size(0)
 
                 # PSNR & SSIM calculation
@@ -149,7 +143,7 @@ def train_latent_autoencoder(latent_reformer,latent_nn,model,train_loader, val_l
         print(f"Epoch {epoch+1}/{epochs} | Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f} | PSNR: {avg_psnr:.3f} | SSIM: {avg_ssim:.3f}")
 
     print("Training Complete!")
-    return latent_reformer, latent_nn, simple_classifier
+    return latent_reformer, latent_nn
 
 
 # evaluate_f1_topo_vs_reconstruction(model, latent_reformer, latent_nn, val_loader, device)

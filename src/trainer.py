@@ -51,7 +51,7 @@ def train(
 
     # Classifier + TopoAE
     # Classifier + TopoAE + Reformer 
-    latent_reformer, latent_nn, simple_classifier = train_latent_autoencoder(
+    latent_reformer, latent_nn, = train_latent_autoencoder(
         latent_reformer, latent_nn, model,
         train_loader, val_loader,
         epochs=epochs, lr=lr, device=device
@@ -66,8 +66,8 @@ def train(
 
 
     # Classifier + TopoAE + Reformer + AUX
-    latent_reformer, latent_nn, simple_classifier = train_latent_autoencoder(
-        latent_reformer, latent_nn, model, simple_classifier,
+    latent_reformer, latent_nn = train_latent_autoencoder(
+        latent_reformer, latent_nn, model, 
         train_loader, val_loader,
         epochs=epochs, lr=lr, device=device
     )
